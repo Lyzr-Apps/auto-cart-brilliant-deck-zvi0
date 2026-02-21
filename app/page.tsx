@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { callAIAgent } from '@/lib/aiAgent'
-import { FiShoppingCart, FiEye, FiSettings, FiCheck, FiX, FiPlus, FiMinus, FiExternalLink, FiTrash2, FiRefreshCw, FiActivity, FiZap, FiShield, FiVolume2, FiBell, FiDownload, FiUpload, FiLoader, FiAlertCircle, FiPackage, FiTrendingUp, FiClock, FiChevronDown, FiLink, FiCopy, FiSearch } from 'react-icons/fi'
+import { FiShoppingCart, FiEye, FiSettings, FiCheck, FiX, FiPlus, FiMinus, FiExternalLink, FiTrash2, FiRefreshCw, FiActivity, FiZap, FiShield, FiVolume2, FiBell, FiDownload, FiUpload, FiLoader, FiAlertCircle, FiPackage, FiTrendingUp, FiClock, FiChevronDown, FiLink, FiSearch } from 'react-icons/fi'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 const CART_STRATEGY_AGENT_ID = '6999ea701868c611d86981d3'
