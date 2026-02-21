@@ -7,6 +7,9 @@ import { FiShoppingCart, FiEye, FiSettings, FiCheck, FiX, FiPlus, FiMinus, FiExt
 // ─── Constants ───────────────────────────────────────────────────────────────
 const CART_STRATEGY_AGENT_ID = '6999ea701868c611d86981d3'
 
+const AVAILABLE_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', '3XL'] as const
+type ProductSize = typeof AVAILABLE_SIZES[number]
+
 // ─── TypeScript Interfaces ───────────────────────────────────────────────────
 interface Activity {
   id: string
@@ -23,6 +26,7 @@ interface MonitoredProduct {
   stockStatus: 'in_stock' | 'sold_out' | 'notify_me' | 'unknown'
   lastChecked: string
   quantity: number
+  size: ProductSize
   autoAdd: boolean
 }
 
@@ -57,9 +61,9 @@ const SAMPLE_ACTIVITIES: Activity[] = [
 ]
 
 const SAMPLE_MONITORED: MonitoredProduct[] = [
-  { id: '1', url: 'https://humanmade.jp/products/duck-hoodie-black', name: 'HumanMade Duck Hoodie - Black', stockStatus: 'in_stock', lastChecked: '2 min ago', quantity: 1, autoAdd: true },
-  { id: '2', url: 'https://humanmade.jp/products/tiger-varsity-jacket', name: 'HumanMade Tiger Varsity Jacket', stockStatus: 'sold_out', lastChecked: '5 min ago', quantity: 1, autoAdd: true },
-  { id: '3', url: 'https://humanmade.jp/products/bear-rug-cushion', name: 'HumanMade Rug Cushion - Bear', stockStatus: 'notify_me', lastChecked: '8 min ago', quantity: 2, autoAdd: false },
+  { id: '1', url: 'https://humanmade.jp/products/duck-hoodie-black', name: 'HumanMade Duck Hoodie - Black', stockStatus: 'in_stock', lastChecked: '2 min ago', quantity: 1, size: 'L', autoAdd: true },
+  { id: '2', url: 'https://humanmade.jp/products/tiger-varsity-jacket', name: 'HumanMade Tiger Varsity Jacket', stockStatus: 'sold_out', lastChecked: '5 min ago', quantity: 1, size: 'M', autoAdd: true },
+  { id: '3', url: 'https://humanmade.jp/products/bear-rug-cushion', name: 'HumanMade Rug Cushion - Bear', stockStatus: 'notify_me', lastChecked: '8 min ago', quantity: 2, size: 'XL', autoAdd: false },
 ]
 
 const SAMPLE_ANALYSIS: AnalysisResult = {
@@ -213,6 +217,28 @@ function QuantityStepper({ value, onChange, min = 1, max = 10 }: { value: number
   )
 }
 
+// ─── Size Selector ─────────────────────────────────────────────────────────
+function SizeSelector({ value, onChange, compact = false }: { value: ProductSize; onChange: (s: ProductSize) => void; compact?: boolean }) {
+  return (
+    <div className={`flex flex-wrap gap-1.5 ${compact ? '' : 'mt-1'}`}>
+      {AVAILABLE_SIZES.map(size => (
+        <button
+          key={size}
+          type="button"
+          onClick={() => onChange(size)}
+          className={`px-2 py-1 rounded-md text-xs font-medium transition-all duration-150 border ${
+            value === size
+              ? 'bg-[hsl(265,89%,72%)] text-white border-[hsl(265,89%,72%)] shadow-sm shadow-[hsl(265,89%,72%)]/30'
+              : 'bg-[hsl(232,16%,24%)] text-[hsl(228,10%,62%)] border-[hsl(232,16%,28%)] hover:text-[hsl(60,30%,96%)] hover:border-[hsl(232,16%,38%)]'
+          }`}
+        >
+          {size}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 // ─── Activity Item ───────────────────────────────────────────────────────────
 function ActivityItem({ activity }: { activity: Activity }) {
   return (
@@ -238,10 +264,11 @@ function ActivityItem({ activity }: { activity: Activity }) {
 }
 
 // ─── Monitor Card ────────────────────────────────────────────────────────────
-function MonitorCard({ product, onRemove, onQuantityChange, onToggleAutoAdd, onCheckNow, checkingId }: {
+function MonitorCard({ product, onRemove, onQuantityChange, onSizeChange, onToggleAutoAdd, onCheckNow, checkingId }: {
   product: MonitoredProduct
   onRemove: (id: string) => void
   onQuantityChange: (id: string, qty: number) => void
+  onSizeChange: (id: string, size: ProductSize) => void
   onToggleAutoAdd: (id: string) => void
   onCheckNow: (id: string) => void
   checkingId: string | null
@@ -280,6 +307,11 @@ function MonitorCard({ product, onRemove, onQuantityChange, onToggleAutoAdd, onC
           <span className="text-xs text-[hsl(228,10%,62%)]">Auto-add</span>
           <ToggleSwitch size="sm" enabled={product.autoAdd} onToggle={() => onToggleAutoAdd(product.id)} />
         </div>
+      </div>
+
+      <div className="mb-3">
+        <span className="text-xs text-[hsl(228,10%,62%)] mb-1.5 block">Size:</span>
+        <SizeSelector compact value={product.size} onChange={(s) => onSizeChange(product.id, s)} />
       </div>
 
       <button
@@ -457,6 +489,7 @@ export default function Page() {
   // Dashboard state
   const [globalEnabled, setGlobalEnabled] = useState(true)
   const [urlInput, setUrlInput] = useState('')
+  const [selectedSize, setSelectedSize] = useState<ProductSize>('M')
   const [loading, setLoading] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null)
   const [activities, setActivities] = useState<Activity[]>([])
@@ -470,6 +503,7 @@ export default function Page() {
 
   // Settings state
   const [defaultQuantity, setDefaultQuantity] = useState(1)
+  const [defaultSize, setDefaultSize] = useState<ProductSize>('M')
   const [autoCheckout, setAutoCheckout] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [desktopNotifications, setDesktopNotifications] = useState(true)
@@ -503,7 +537,7 @@ export default function Page() {
     setActiveAgentId(CART_STRATEGY_AGENT_ID)
     try {
       const result = await callAIAgent(
-        `Analyze this humanmade.jp product page and determine the add-to-cart strategy: ${url}`,
+        `Analyze this humanmade.jp product page and determine the add-to-cart strategy. Target size: ${selectedSize}. URL: ${url}`,
         CART_STRATEGY_AGENT_ID
       )
       const mapped = mapResponse(result)
@@ -525,7 +559,7 @@ export default function Page() {
       setLoading(false)
       setActiveAgentId(null)
     }
-  }, [])
+  }, [selectedSize])
 
   const handleAddMonitor = useCallback(() => {
     if (!monitorUrl.trim()) return
@@ -536,11 +570,12 @@ export default function Page() {
       stockStatus: 'unknown',
       lastChecked: 'Never',
       quantity: defaultQuantity,
+      size: defaultSize,
       autoAdd: false,
     }
     setMonitoredProducts(prev => [newProduct, ...prev])
     setMonitorUrl('')
-  }, [monitorUrl, defaultQuantity])
+  }, [monitorUrl, defaultQuantity, defaultSize])
 
   const handleCheckNow = useCallback(async (id: string) => {
     const product = monitoredProducts.find(p => p.id === id)
@@ -549,7 +584,7 @@ export default function Page() {
     setActiveAgentId(CART_STRATEGY_AGENT_ID)
     try {
       const result = await callAIAgent(
-        `Analyze this humanmade.jp product page and determine the add-to-cart strategy: ${product.url}`,
+        `Analyze this humanmade.jp product page and determine the add-to-cart strategy. Target size: ${product.size}. URL: ${product.url}`,
         CART_STRATEGY_AGENT_ID
       )
       const mapped = mapResponse(result)
@@ -578,6 +613,10 @@ export default function Page() {
 
   const handleQuantityChange = useCallback((id: string, qty: number) => {
     setMonitoredProducts(prev => prev.map(p => p.id === id ? { ...p, quantity: qty } : p))
+  }, [])
+
+  const handleSizeChange = useCallback((id: string, size: ProductSize) => {
+    setMonitoredProducts(prev => prev.map(p => p.id === id ? { ...p, size } : p))
   }, [])
 
   const handleToggleAutoAdd = useCallback((id: string) => {
@@ -700,6 +739,10 @@ export default function Page() {
                       Analyze
                     </button>
                   </div>
+                  <div className="mt-3">
+                    <span className="text-xs text-[hsl(228,10%,62%)] mb-1.5 block">Target Size:</span>
+                    <SizeSelector value={selectedSize} onChange={setSelectedSize} />
+                  </div>
                 </div>
 
                 {/* Error Message */}
@@ -818,6 +861,7 @@ export default function Page() {
                         product={product}
                         onRemove={handleRemoveMonitor}
                         onQuantityChange={handleQuantityChange}
+                        onSizeChange={handleSizeChange}
                         onToggleAutoAdd={handleToggleAutoAdd}
                         onCheckNow={handleCheckNow}
                         checkingId={checkingId}
@@ -840,6 +884,15 @@ export default function Page() {
                     </div>
                     <QuantityStepper value={defaultQuantity} onChange={setDefaultQuantity} />
                   </div>
+                </div>
+
+                {/* Default Size */}
+                <div className="bg-[hsl(232,16%,22%)] border border-[hsl(232,16%,28%)] rounded-[0.875rem] p-4 shadow-lg shadow-black/20">
+                  <div className="mb-2">
+                    <h3 className="text-sm font-semibold text-[hsl(60,30%,96%)] tracking-tight">Default Size</h3>
+                    <p className="text-xs text-[hsl(228,10%,62%)] mt-0.5">Size for new monitored products</p>
+                  </div>
+                  <SizeSelector value={defaultSize} onChange={setDefaultSize} />
                 </div>
 
                 {/* Auto-Checkout */}
@@ -918,7 +971,7 @@ export default function Page() {
                     <button
                       type="button"
                       onClick={() => {
-                        const data = JSON.stringify({ monitoredProducts, settings: { defaultQuantity, autoCheckout, soundEnabled, desktopNotifications, bypassMode, checkInterval } }, null, 2)
+                        const data = JSON.stringify({ monitoredProducts, settings: { defaultQuantity, defaultSize, autoCheckout, soundEnabled, desktopNotifications, bypassMode, checkInterval } }, null, 2)
                         const blob = new Blob([data], { type: 'application/json' })
                         const url = URL.createObjectURL(blob)
                         const a = document.createElement('a')
@@ -950,6 +1003,7 @@ export default function Page() {
                               }
                               if (parsed?.settings) {
                                 if (typeof parsed.settings.defaultQuantity === 'number') setDefaultQuantity(parsed.settings.defaultQuantity)
+                                if (parsed.settings.defaultSize && AVAILABLE_SIZES.includes(parsed.settings.defaultSize)) setDefaultSize(parsed.settings.defaultSize)
                                 if (typeof parsed.settings.autoCheckout === 'boolean') setAutoCheckout(parsed.settings.autoCheckout)
                                 if (typeof parsed.settings.soundEnabled === 'boolean') setSoundEnabled(parsed.settings.soundEnabled)
                                 if (typeof parsed.settings.desktopNotifications === 'boolean') setDesktopNotifications(parsed.settings.desktopNotifications)
