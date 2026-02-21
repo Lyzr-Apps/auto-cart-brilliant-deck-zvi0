@@ -1,0 +1,48 @@
+{
+  "agent_name": "Cart Strategy Agent",
+  "agent_id": "6999ea701868c611d86981d3",
+  "description": "Analyzes humananade.jp product page HTML/DOM structure to identify add-to-cart API endpoints, stock restriction elements (Notify Me, Sold Out buttons), determines the optimal bypass method (direct API call, form manipulation, cookie injection), generates the correct cart payload, and constructs checkout URLs with added products",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "bypass_method": "string",
+    "cart_payload": {
+      "product_id": "string",
+      "variant_id": "string",
+      "quantity": "number",
+      "form_action": "string"
+    },
+    "checkout_url": "string",
+    "stock_status": "string",
+    "product_info": {
+      "name": "string",
+      "price": "string",
+      "image_url": "string",
+      "availability": "string"
+    },
+    "recommendations": "string",
+    "success": "boolean",
+    "error_message": "string"
+  },
+  "example_response": {
+    "bypass_method": "sample string",
+    "cart_payload": {
+      "product_id": "sample string",
+      "variant_id": "sample string",
+      "quantity": 0,
+      "form_action": "sample string"
+    },
+    "checkout_url": "sample string",
+    "stock_status": "sample string",
+    "product_info": {
+      "name": "sample string",
+      "price": "sample string",
+      "image_url": "sample string",
+      "availability": "sample string"
+    },
+    "recommendations": "sample string",
+    "success": false,
+    "error_message": "sample string"
+  }
+}

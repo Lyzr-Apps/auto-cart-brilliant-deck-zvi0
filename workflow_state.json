@@ -1,0 +1,8 @@
+{
+  "agent_ids": {
+    "Cart Strategy Agent": "6999ea701868c611d86981d3"
+  },
+  "created_at": "2026-02-21",
+  "workflow_type": "single_agent",
+  "status": "active"
+}

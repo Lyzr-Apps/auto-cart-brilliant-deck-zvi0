@@ -1,0 +1,27 @@
+{
+  "agent_name": "Cart Strategy Agent",
+  "agent_id": "6999ea701868c611d86981d3",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "schema": {
+    "bypass_method": "string",
+    "cart_payload": {
+      "product_id": "string",
+      "variant_id": "string",
+      "quantity": "number",
+      "form_action": "string"
+    },
+    "checkout_url": "string",
+    "stock_status": "string",
+    "product_info": {
+      "name": "string",
+      "price": "string",
+      "image_url": "string",
+      "availability": "string"
+    },
+    "recommendations": "string",
+    "success": "boolean",
+    "error_message": "string"
+  }
+}

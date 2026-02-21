@@ -1,0 +1,32 @@
+{
+  "nodes": [
+    {
+      "id": "input_node",
+      "type": "Input",
+      "label": "Product Page Visit",
+      "nodeCategory": "input"
+    },
+    {
+      "id": "cart_strategy_agent",
+      "type": "Agent",
+      "label": "Cart Strategy Agent",
+      "nodeCategory": "agent"
+    },
+    {
+      "id": "output_node",
+      "type": "Output",
+      "label": "Bypass Strategy Output",
+      "nodeCategory": "end"
+    }
+  ],
+  "edges": [
+    {
+      "source": "input_node",
+      "target": "cart_strategy_agent"
+    },
+    {
+      "source": "cart_strategy_agent",
+      "target": "output_node"
+    }
+  ]
+}
