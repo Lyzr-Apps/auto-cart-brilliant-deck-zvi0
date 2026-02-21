@@ -719,7 +719,7 @@ export default function Page() {
                     href={analysisResult.checkoutUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-3 bg-[hsl(135,94%,60%)] text-[hsl(231,18%,10%)] rounded-[0.875rem] text-sm font-bold tracking-tight hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-[hsl(135,94%,60%)]/20 block text-center"
+                    className="w-full py-3 bg-[hsl(135,94%,60%)] text-[hsl(231,18%,10%)] rounded-[0.875rem] text-sm font-bold tracking-tight hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-[hsl(135,94%,60%)]/20"
                   >
                     <FiShoppingCart className="w-4 h-4" />
                     Go to Checkout
